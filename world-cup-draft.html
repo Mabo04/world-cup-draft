@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World Cup Draft</title>
+  <style>
+    :root {
+      --ink: #17211c;
+      --muted: #647067;
+      --paper: #fffdf5;
+      --line: #d9d4c3;
+      --grass: #0f6b3f;
+      --grass-dark: #083f29;
+      --lime: #d8ff69;
+      --gold: #f3bd3b;
+      --red: #d84a35;
+      --white: #ffffff;
+      --shadow: 0 18px 50px rgba(23, 33, 28, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(216, 255, 105, 0.45), transparent 32rem),
+        linear-gradient(135deg, #fffdf5 0%, #eef5df 50%, #d6ead5 100%);
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .ball {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--paper);
+      font-weight: 900;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 6vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .primary,
+    .ghost,
+    .danger {
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-weight: 800;
+      min-height: 42px;
+    }
+
+    .primary {
+      color: var(--grass-dark);
+      background: var(--lime);
+      box-shadow: 0 8px 22px rgba(15, 107, 63, 0.22);
+    }
+
+    .ghost {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+    }
+
+    .danger {
+      color: var(--white);
+      background: var(--red);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 8px 0 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--muted);
+      padding: 10px 8px;
+      font-weight: 900;
+    }
+
+    .tab.active {
+      background: var(--grass);
+      color: var(--white);
+      border-color: var(--grass);
+    }
+
+    .panel {
+      display: none;
+      animation: rise 260ms ease both;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 14px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(217, 212, 195, 0.9);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .card h2,
+    .card h3 {
+      margin: 0 0 12px;
+      letter-spacing: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--white);
+      color: var(--ink);
+      outline: 0;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--grass);
+      box-shadow: 0 0 0 3px rgba(15, 107, 63, 0.16);
+    }
+
+    .player-list,
+    .team-grid,
+    .score-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .player-row,
+    .team-row,
+    .score-row,
+    .rank-row {
+      display: grid;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .player-row {
+      grid-template-columns: 1fr auto;
+    }
+
+    .team-row {
+      grid-template-columns: 1.2fr 0.85fr 0.85fr;
+    }
+
+    .score-row {
+      grid-template-columns: 1fr 86px;
+    }
+
+    .rank-row {
+      grid-template-columns: auto 1fr auto;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .rank-row:last-child {
+      border-bottom: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 900;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: #edf5e3;
+      color: var(--grass-dark);
+      font-size: 0.78rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .draft-board {
+      display: grid;
+      gap: 10px;
+    }
+
+    .draft-now {
+      background: linear-gradient(135deg, var(--grass), var(--grass-dark));
+      color: var(--white);
+      border-radius: 8px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .draft-now::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -55px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 22px solid rgba(216, 255, 105, 0.32);
+    }
+
+    .draft-now p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-weight: 800;
+    }
+
+    .draft-now strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.9rem;
+      line-height: 1;
+    }
+
+    .pick-zone {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .team-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 8px;
+    }
+
+    .team-chip {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      min-height: 46px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+    }
+
+    .team-chip.taken {
+      color: var(--muted);
+      background: #f2efe3;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+
+    .leader-score {
+      font-size: 1.35rem;
+      font-weight: 1000;
+    }
+
+    .owned {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      z-index: 10;
+      transform: translateX(-50%) translateY(20px);
+      max-width: min(92vw, 440px);
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--ink);
+      color: var(--white);
+      opacity: 0;
+      pointer-events: none;
+      transition: 180ms ease;
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        padding: 12px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .actions button {
+        flex: 1 1 auto;
+      }
+
+      .grid,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .tab {
+        padding: 10px 4px;
+        font-size: 0.82rem;
+      }
+
+      .team-row {
+        grid-template-columns: 1fr;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 8px;
+      }
+
+      .pick-zone {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="ball">WC</div>
+        <div>
+          <h1>World Cup Draft</h1>
+          <p class="subtitle">友達と国を取り合って、結果の合計点で勝負。</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="ghost" id="shareBtn">共有リンク</button>
+        <button class="ghost" id="exportBtn">データ保存</button>
+        <button class="danger" id="resetBtn">リセット</button>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="画面切り替え">
+      <button class="tab active" data-tab="setup">設定</button>
+      <button class="tab" data-tab="draft">ドラフト</button>
+      <button class="tab" data-tab="live">ライブ</button>
+      <button class="tab" data-tab="results">結果入力</button>
+      <button class="tab" data-tab="standings">順位</button>
+    </nav>
+
+    <section class="panel active" id="setup">
+      <div class="grid">
+        <div class="card">
+          <h2>参加者</h2>
+          <div class="form-grid">
+            <label>参加人数
+              <input id="playerCount" type="number" min="2" max="16" value="8">
+            </label>
+            <label>ドラフト方式
+              <select id="draftMode">
+                <option value="snake">折り返しドラフト</option>
+                <option value="straight">毎巡同じ順番</option>
+              </select>
+            </label>
+          </div>
+          <div class="player-list" id="playerList" style="margin-top: 12px;"></div>
+          <button class="primary" id="applyPlayers" style="width: 100%; margin-top: 12px;">参加者を反映</button>
+          <p class="small" id="slotHint"></p>
+        </div>
+
+        <div class="card">
+          <h2>得点ルール</h2>
+          <div class="score-grid" id="scoreRules"></div>
+          <p class="small">48チーム制なので「ベスト32」を入れています。不要なら同じ点数にしておけばOKです。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="draft">
+      <div class="grid">
+        <div class="card draft-board">
+          <div class="draft-now">
+            <p>次の指名</p>
+            <strong id="currentPicker">未設定</strong>
+          </div>
+          <div class="pick-zone">
+            <select id="teamSelect"></select>
+            <button class="primary" id="pickBtn">この国を取る</button>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="undoBtn">1つ戻す</button>
+            <button class="ghost" id="autoBtn">未指名を自動配分</button>
+          </div>
+          <p class="small" id="draftHint"></p>
+        </div>
+        <div class="card">
+          <h2>指名済み</h2>
+          <div id="draftSummary"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="live">
+      <div class="grid">
+        <div class="card">
+          <h2>外部結果を取得</h2>
+          <label>結果フィードURL
+            <input id="feedUrl" type="url" placeholder="https://example.com/world-cup-results.json">
+          </label>
+          <div class="actions" style="margin-top: 12px;">
+            <button class="primary" id="syncBtn">結果を取得</button>
+            <button class="ghost" id="sampleBtn">サンプル形式</button>
+          </div>
+          <p class="small" id="syncStatus"></p>
+        </div>
+        <div class="card">
+          <h2>現在の試合結果</h2>
+          <div id="matchList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="results">
+      <div class="card">
+        <h2>チーム結果</h2>
+        <div class="team-grid" id="teamRows"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="standings">
+      <div class="grid">
+        <div class="card">
+          <h2>総合順位</h2>
+          <div id="leaderboard"></div>
+        </div>
+        <div class="card">
+          <h2>未入力チェック</h2>
+          <div id="missingResults"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "world-cup-draft-v1";
+    const defaultTeams = [
+      "カナダ", "メキシコ", "アメリカ", "アルゼンチン", "ブラジル", "ウルグアイ",
+      "コロンビア", "エクアドル", "パラグアイ", "チリ", "日本", "韓国",
+      "オーストラリア", "イラン", "サウジアラビア", "カタール", "ウズベキスタン", "ヨルダン",
+      "イラク", "ニュージーランド", "モロッコ", "セネガル", "エジプト", "チュニジア",
+      "アルジェリア", "ガーナ", "ナイジェリア", "南アフリカ", "コートジボワール", "カメルーン",
+      "フランス", "スペイン", "イングランド", "ドイツ", "ポルトガル", "オランダ",
+      "イタリア", "クロアチア", "ベルギー", "デンマーク", "スイス", "オーストリア",
+      "トルコ", "ノルウェー", "スコットランド", "ポーランド", "セルビア", "ウクライナ"
+    ];
+
+    const stages = [
+      ["group", "グループ敗退"],
+      ["r32", "ベスト32"],
+      ["r16", "ベスト16"],
+      ["qf", "ベスト8"],
+      ["sf", "ベスト4"],
+      ["runner", "準優勝"],
+      ["champion", "優勝"]
+    ];
+
+    const defaultScores = {
+      group: 0,
+      r32: 1,
+      r16: 3,
+      qf: 5,
+      sf: 8,
+      runner: 11,
+      champion: 15
+    };
+
+    let state = readState();
+
+    function freshState() {
+      return {
+        players: Array.from({ length: 8 }, (_, index) => `Player ${index + 1}`),
+        teams: defaultTeams.map((name) => ({ name, owner: "", stage: "group" })),
+        scores: { ...defaultScores },
+        draftMode: "snake",
+        picks: [],
+        feedUrl: "",
+        live: { updatedAt: "", matches: [] },
+        activeTab: "setup"
+      };
+    }
+
+    function readState() {
+      const fromHash = decodeHash();
+      if (fromHash) return fromHash;
+
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return normalize(JSON.parse(saved));
+      } catch (error) {
+        console.warn(error);
+      }
+      return freshState();
+    }
+
+    function normalize(nextState) {
+      const base = freshState();
+      return {
+        ...base,
+        ...nextState,
+        players: Array.isArray(nextState.players) && nextState.players.length ? nextState.players : base.players,
+        teams: Array.isArray(nextState.teams) && nextState.teams.length ? nextState.teams : base.teams,
+        scores: { ...base.scores, ...(nextState.scores || {}) },
+        picks: Array.isArray(nextState.picks) ? nextState.picks : [],
+        live: nextState.live && typeof nextState.live === "object" ? nextState.live : base.live
+      };
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function encodeState() {
+      const json = JSON.stringify(state);
+      return btoa(unescape(encodeURIComponent(json)));
+    }
+
+    function decodeHash() {
+      if (!location.hash.startsWith("#room=")) return null;
+      try {
+        const json = decodeURIComponent(escape(atob(location.hash.replace("#room=", ""))));
+        history.replaceState(null, "", location.pathname);
+        return normalize(JSON.parse(json));
+      } catch (error) {
+        console.warn(error);
+        return null;
+      }
+    }
+
+    function pickOrder() {
+      const rounds = Math.ceil(state.teams.length / Math.max(state.players.length, 1));
+      const order = [];
+      for (let round = 0; round < rounds; round += 1) {
+        const playerIndexes = state.players.map((_, index) => index);
+        const roundOrder = state.draftMode === "snake" && round % 2 === 1
+          ? playerIndexes.reverse()
+          : playerIndexes;
+        order.push(...roundOrder);
+      }
+      return order.slice(0, state.teams.length);
+    }
+
+    function currentPickerIndex() {
+      return pickOrder()[state.picks.length];
+    }
+
+    function scoreTeam(team) {
+      return Number(state.scores[team.stage] || 0);
+    }
+
+    function playerTeams(player) {
+      return state.teams.filter((team) => team.owner === player);
+    }
+
+    function playerScore(player) {
+      return playerTeams(player).reduce((total, team) => total + scoreTeam(team), 0);
+    }
+
+    function showToast(message) {
+      const toast = document.querySelector("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1900);
+    }
+
+    function render() {
+      save();
+      renderTabs();
+      renderSetup();
+      renderDraft();
+      renderLive();
+      renderResults();
+      renderStandings();
+    }
+
+    function renderTabs() {
+      document.querySelectorAll(".tab").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === state.activeTab);
+      });
+      document.querySelectorAll(".panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === state.activeTab);
+      });
+    }
+
+    function renderSetup() {
+      document.querySelector("#playerCount").value = state.players.length;
+      document.querySelector("#draftMode").value = state.draftMode;
+
+      const playerList = document.querySelector("#playerList");
+      playerList.innerHTML = state.players.map((player, index) => `
+        <div class="player-row">
+          <input aria-label="参加者${index + 1}" value="${escapeHtml(player)}" data-player-index="${index}">
+          <button class="ghost" data-remove-player="${index}">削除</button>
+        </div>
+      `).join("");
+
+      document.querySelector("#slotHint").textContent =
+        `${state.teams.length}チームを${state.players.length}人で分けます。1人あたり約${Math.floor(state.teams.length / state.players.length)}から${Math.ceil(state.teams.length / state.players.length)}チームです。`;
+
+      document.querySelector("#scoreRules").innerHTML = stages.map(([key, label]) => `
+        <label class="score-row">${label}
+          <input type="number" value="${state.scores[key]}" data-score-key="${key}">
+        </label>
+      `).join("");
+    }
+
+    function renderDraft() {
+      const picker = state.players[currentPickerIndex()];
+      document.querySelector("#currentPicker").textContent = picker || "ドラフト完了";
+
+      const availableTeams = state.teams.filter((team) => !team.owner);
+      document.querySelector("#teamSelect").innerHTML = availableTeams.map((team) =>
+        `<option value="${escapeHtml(team.name)}">${escapeHtml(team.name)}</option>`
+      ).join("");
+
+      const taken = state.teams.length - availableTeams.length;
+      document.querySelector("#draftHint").textContent = `${taken}/${state.teams.length}チーム指名済み`;
+
+      document.querySelector("#draftSummary").innerHTML = state.players.map((player) => {
+        const teams = playerTeams(player);
+        const names = teams.length
+          ? teams.map((team) => `<span class="pill">${escapeHtml(team.name)}</span>`).join("")
+          : `<span class="small">まだ指名なし</span>`;
+        return `
+          <div class="rank-row">
+            <span class="badge">${teams.length}</span>
+            <div><strong>${escapeHtml(player)}</strong><div class="owned">${names}</div></div>
+            <span class="leader-score">${playerScore(player)}</span>
+          </div>
+        `;
+      }).join("");
+
+      const teamList = document.querySelector("#teamSelect");
+      document.querySelector("#pickBtn").disabled = !picker || !teamList.value;
+    }
+
+    function renderResults() {
+      document.querySelector("#teamRows").innerHTML = state.teams
+        .slice()
+        .sort((a, b) => (a.owner || "未指名").localeCompare(b.owner || "未指名", "ja") || a.name.localeCompare(b.name, "ja"))
+        .map((team) => `
+          <div class="team-row">
+            <div>
+              <strong>${escapeHtml(team.name)}</strong>
+              <div class="small">${escapeHtml(team.owner || "未指名")}</div>
+            </div>
+            <select data-stage-team="${escapeHtml(team.name)}">
+              ${stages.map(([key, label]) => `
+                <option value="${key}" ${team.stage === key ? "selected" : ""}>${label}</option>
+              `).join("")}
+            </select>
+            <span class="pill">${scoreTeam(team)}点</span>
+          </div>
+        `).join("");
+    }
+
+    function renderLive() {
+      document.querySelector("#feedUrl").value = state.feedUrl || "";
+      const updatedText = state.live.updatedAt
+        ? `最終取得: ${new Date(state.live.updatedAt).toLocaleString("ja-JP")}`
+        : "まだ外部結果を取得していません。";
+      document.querySelector("#syncStatus").textContent = updatedText;
+
+      const matches = Array.isArray(state.live.matches) ? state.live.matches : [];
+      document.querySelector("#matchList").innerHTML = matches.length
+        ? matches.slice(0, 18).map((match) => {
+          const score = match.homeScore === null || match.homeScore === undefined
+            ? "vs"
+            : `${match.homeScore} - ${match.awayScore}`;
+          return `
+            <div class="team-chip">
+              <span>${escapeHtml(match.home)} ${escapeHtml(score)} ${escapeHtml(match.away)}</span>
+              <span class="pill">${escapeHtml(match.status || "予定")}</span>
+            </div>
+          `;
+        }).join("")
+        : `<p class="small">取得した試合結果がここに出ます。</p>`;
+    }
+
+    async function syncResults() {
+      const input = document.querySelector("#feedUrl");
+      state.feedUrl = input.value.trim();
+      if (!state.feedUrl) {
+        showToast("結果フィードURLを入れてください");
+        render();
+        return;
+      }
+
+      try {
+        const response = await fetch(state.feedUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        applyResultPayload(payload);
+        state.live.updatedAt = payload.updatedAt || new Date().toISOString();
+        state.live.matches = Array.isArray(payload.matches) ? payload.matches : [];
+        render();
+        showToast("外部結果を反映しました");
+      } catch (error) {
+        document.querySelector("#syncStatus").textContent = `取得できませんでした: ${error.message}`;
+        showToast("結果を取得できませんでした");
+      }
+    }
+
+    function applyResultPayload(payload) {
+      const updates = {};
+      if (payload.stages && typeof payload.stages === "object") {
+        Object.assign(updates, payload.stages);
+      }
+      if (Array.isArray(payload.teams)) {
+        payload.teams.forEach((team) => {
+          if (team.name && team.stage) updates[team.name] = team.stage;
+        });
+      }
+
+      state.teams.forEach((team) => {
+        const nextStage = updates[team.name];
+        if (stages.some(([key]) => key === nextStage)) team.stage = nextStage;
+      });
+    }
+
+    function renderStandings() {
+      const ranking = state.players
+        .map((player) => ({ player, teams: playerTeams(player), score: playerScore(player) }))
+        .sort((a, b) => b.score - a.score || b.teams.length - a.teams.length || a.player.localeCompare(b.player, "ja"));
+
+      document.querySelector("#leaderboard").innerHTML = ranking.map((item, index) => `
+        <div class="rank-row">
+          <span class="badge">${index + 1}</span>
+          <div>
+            <strong>${escapeHtml(item.player)}</strong>
+            <div class="owned">${item.teams.map((team) => `<span class="pill">${escapeHtml(team.name)} ${scoreTeam(team)}</span>`).join("") || `<span class="small">チームなし</span>`}</div>
+          </div>
+          <span class="leader-score">${item.score}</span>
+        </div>
+      `).join("");
+
+      const unowned = state.teams.filter((team) => !team.owner);
+      const groupOnly = state.teams.filter((team) => team.owner && team.stage === "group");
+      document.querySelector("#missingResults").innerHTML = `
+        <p class="small">未指名: ${unowned.length}チーム</p>
+        <p class="small">結果が初期値のまま: ${groupOnly.length}チーム</p>
+        <div class="team-list">
+          ${unowned.slice(0, 12).map((team) => `<div class="team-chip">${escapeHtml(team.name)}<span class="pill">未指名</span></div>`).join("")}
+        </div>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeTab = button.dataset.tab;
+        render();
+      });
+    });
+
+    document.querySelector("#applyPlayers").addEventListener("click", () => {
+      const count = Math.max(2, Math.min(16, Number(document.querySelector("#playerCount").value || 8)));
+      const names = Array.from({ length: count }, (_, index) => {
+        const input = document.querySelector(`[data-player-index="${index}"]`);
+        return (input && input.value.trim()) || `Player ${index + 1}`;
+      });
+      state.players = names;
+      state.draftMode = document.querySelector("#draftMode").value;
+      state.teams.forEach((team) => {
+        if (team.owner && !state.players.includes(team.owner)) team.owner = "";
+      });
+      state.picks = state.picks.filter((pick) => state.players.includes(pick.player));
+      render();
+      showToast("参加者を反映しました");
+    });
+
+    document.addEventListener("input", (event) => {
+      const playerIndex = event.target.dataset.playerIndex;
+      const scoreKey = event.target.dataset.scoreKey;
+      if (playerIndex !== undefined) {
+        state.players[Number(playerIndex)] = event.target.value;
+        renderDraft();
+        renderStandings();
+        save();
+      }
+      if (scoreKey) {
+        state.scores[scoreKey] = Number(event.target.value || 0);
+        renderResults();
+        renderStandings();
+        save();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const removeIndex = event.target.dataset.removePlayer;
+      if (removeIndex === undefined) return;
+      if (state.players.length <= 2) {
+        showToast("参加者は2人以上必要です");
+        return;
+      }
+      const removed = state.players[Number(removeIndex)];
+      state.players.splice(Number(removeIndex), 1);
+      state.teams.forEach((team) => {
+        if (team.owner === removed) team.owner = "";
+      });
+      state.picks = state.picks.filter((pick) => pick.player !== removed);
+      render();
+    });
+
+    document.addEventListener("change", (event) => {
+      const teamName = event.target.dataset.stageTeam;
+      if (!teamName) return;
+      const team = state.teams.find((item) => item.name === teamName);
+      if (team) team.stage = event.target.value;
+      render();
+    });
+
+    document.querySelector("#feedUrl").addEventListener("input", (event) => {
+      state.feedUrl = event.target.value;
+      save();
+    });
+
+    document.querySelector("#syncBtn").addEventListener("click", syncResults);
+
+    document.querySelector("#sampleBtn").addEventListener("click", () => {
+      const url = new URL("sample-results.json", location.href).href;
+      document.querySelector("#feedUrl").value = url;
+      state.feedUrl = url;
+      render();
+      showToast("サンプルURLを入れました");
+    });
+
+    document.querySelector("#pickBtn").addEventListener("click", () => {
+      const picker = state.players[currentPickerIndex()];
+      const teamName = document.querySelector("#teamSelect").value;
+      const team = state.teams.find((item) => item.name === teamName);
+      if (!picker || !team || team.owner) return;
+      team.owner = picker;
+      state.picks.push({ player: picker, team: team.name });
+      render();
+    });
+
+    document.querySelector("#undoBtn").addEventListener("click", () => {
+      const last = state.picks.pop();
+      if (!last) return;
+      const team = state.teams.find((item) => item.name === last.team);
+      if (team) team.owner = "";
+      render();
+      showToast("1つ戻しました");
+    });
+
+    document.querySelector("#autoBtn").addEventListener("click", () => {
+      while (state.picks.length < state.teams.length) {
+        const picker = state.players[currentPickerIndex()];
+        const team = state.teams.find((item) => !item.owner);
+        if (!picker || !team) break;
+        team.owner = picker;
+        state.picks.push({ player: picker, team: team.name });
+      }
+      render();
+      showToast("未指名チームを配分しました");
+    });
+
+    document.querySelector("#shareBtn").addEventListener("click", async () => {
+      const url = `${location.origin}${location.pathname}#room=${encodeState()}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("共有リンクをコピーしました");
+      } catch (error) {
+        prompt("このリンクをLINEに貼って送れます", url);
+      }
+    });
+
+    document.querySelector("#exportBtn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "world-cup-draft.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.querySelector("#resetBtn").addEventListener("click", () => {
+      if (!confirm("ドラフトと結果をリセットしますか？")) return;
+      state = freshState();
+      render();
+      showToast("リセットしました");
+    });
+
+    render();
+  </script>
+</body>
+</html>

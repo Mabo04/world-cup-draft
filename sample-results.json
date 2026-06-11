@@ -1,0 +1,33 @@
+{
+  "updatedAt": "2026-06-11T12:00:00+09:00",
+  "stages": {
+    "カナダ": "r32",
+    "日本": "r16",
+    "ブラジル": "qf",
+    "フランス": "sf",
+    "アルゼンチン": "champion"
+  },
+  "matches": [
+    {
+      "home": "カナダ",
+      "away": "メキシコ",
+      "homeScore": 2,
+      "awayScore": 1,
+      "status": "終了"
+    },
+    {
+      "home": "日本",
+      "away": "ドイツ",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "終了"
+    },
+    {
+      "home": "ブラジル",
+      "away": "フランス",
+      "homeScore": null,
+      "awayScore": null,
+      "status": "予定"
+    }
+  ]
+}
