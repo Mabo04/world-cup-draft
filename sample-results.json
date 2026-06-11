@@ -9,24 +9,24 @@
   },
   "matches": [
     {
+      "home": "メキシコ",
+      "away": "南アフリカ",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "終了"
+    },
+    {
+      "home": "韓国",
+      "away": "チェコ",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "終了"
+    },
+    {
       "home": "カナダ",
-      "away": "メキシコ",
-      "homeScore": 2,
-      "awayScore": 1,
-      "status": "終了"
-    },
-    {
-      "home": "日本",
-      "away": "ドイツ",
-      "homeScore": 1,
-      "awayScore": 1,
-      "status": "終了"
-    },
-    {
-      "home": "ブラジル",
-      "away": "フランス",
-      "homeScore": null,
-      "awayScore": null,
+      "away": "ボスニアヘルツェゴビナ",
+      "homeScore": 0,
+      "awayScore": 0,
       "status": "予定"
     }
   ]
