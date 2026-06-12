@@ -222,7 +222,8 @@
 
     .player-list,
     .team-grid,
-    .score-grid {
+    .score-grid,
+    .group-grid {
       display: grid;
       gap: 8px;
     }
@@ -242,6 +243,59 @@
 
     .team-row {
       grid-template-columns: 1.2fr 0.7fr 0.85fr 0.85fr;
+    }
+
+    .group-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .group-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .group-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .group-team {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .group-team:last-child {
+      border-bottom: 0;
+    }
+
+    .group-team-meta {
+      min-width: 0;
+    }
+
+    .move-buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.45;
+      cursor: default;
     }
 
     .score-row {
@@ -431,6 +485,15 @@
         padding-bottom: 8px;
       }
 
+      .group-team {
+        grid-template-columns: auto 1fr;
+      }
+
+      .move-buttons {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+      }
+
       .pick-zone {
         grid-template-columns: 1fr;
       }
@@ -539,7 +602,7 @@
     <section class="panel" id="results">
       <div class="card">
         <h2>チーム結果</h2>
-        <div class="team-grid" id="teamRows"></div>
+        <div class="group-grid" id="teamRows"></div>
       </div>
     </section>
 
@@ -571,6 +634,27 @@
       "サウジアラビア", "スコットランド", "セネガル", "南アフリカ", "スペイン", "スウェーデン",
       "スイス", "チュニジア", "トルコ", "アメリカ合衆国", "ウルグアイ", "ウズベキスタン"
     ];
+
+    const groups = {
+      "グループA": ["メキシコ", "南アフリカ", "韓国", "チェコ"],
+      "グループB": ["カナダ", "ボスニア・ヘルツェゴビナ", "カタール", "スイス"],
+      "グループC": ["ブラジル", "モロッコ", "ハイチ", "スコットランド"],
+      "グループD": ["アメリカ合衆国", "パラグアイ", "オーストラリア", "トルコ"],
+      "グループE": ["ドイツ", "キュラソー", "コートジボワール", "エクアドル"],
+      "グループF": ["オランダ", "日本", "スウェーデン", "チュニジア"],
+      "グループG": ["ベルギー", "エジプト", "イラン", "ニュージーランド"],
+      "グループH": ["スペイン", "カーボベルデ", "サウジアラビア", "ウルグアイ"],
+      "グループI": ["フランス", "セネガル", "イラク", "ノルウェー"],
+      "グループJ": ["アルゼンチン", "アルジェリア", "オーストリア", "ヨルダン"],
+      "グループK": ["ポルトガル", "コンゴ民主共和国", "ウズベキスタン", "コロンビア"],
+      "グループL": ["イングランド", "クロアチア", "ガーナ", "パナマ"]
+    };
+
+    const teamToGroup = Object.fromEntries(
+      Object.entries(groups).flatMap(([groupName, teamNames]) =>
+        teamNames.map((teamName) => [teamName, groupName])
+      )
+    );
 
     const stages = [
       ["group", "グループ敗退"],
@@ -637,7 +721,14 @@
     function freshState() {
       return {
         players: Array.from({ length: 8 }, (_, index) => `Player ${index + 1}`),
-        teams: defaultTeams.map((name) => ({ name, owner: "", stage: "group", groupRank: "" })),
+        teams: defaultTeams.map((name) => ({
+          name,
+          owner: "",
+          stage: "group",
+          group: teamToGroup[name] || "",
+          groupRank: String((groups[teamToGroup[name]] || []).indexOf(name) + 1 || ""),
+          groupPosition: String((groups[teamToGroup[name]] || []).indexOf(name) + 1 || "")
+        })),
         scores: { ...defaultScores },
         groupScores: { ...defaultGroupScores },
         draftMode: "snake",
@@ -667,7 +758,15 @@
         ...base,
         ...nextState,
         players: Array.isArray(nextState.players) && nextState.players.length ? nextState.players : base.players,
-        teams: Array.isArray(nextState.teams) && nextState.teams.length ? nextState.teams : base.teams,
+        teams: Array.isArray(nextState.teams) && nextState.teams.length
+          ? nextState.teams.map((team, index) => ({
+            ...base.teams[index],
+            ...team,
+            group: teamToGroup[team.name] || team.group || "",
+            groupPosition: String(team.groupPosition || team.groupRank || (groups[teamToGroup[team.name] || team.group] || []).indexOf(team.name) + 1 || ""),
+            groupRank: String(team.groupRank || team.groupPosition || (groups[teamToGroup[team.name] || team.group] || []).indexOf(team.name) + 1 || "")
+          }))
+          : base.teams,
         scores: { ...base.scores, ...(nextState.scores || {}) },
         groupScores: { ...base.groupScores, ...(nextState.groupScores || {}) },
         picks: Array.isArray(nextState.picks) ? nextState.picks : [],
@@ -715,6 +814,34 @@
 
     function scoreTeam(team) {
       return Number(state.scores[team.stage] || 0) + Number(state.groupScores[String(team.groupRank)] || 0);
+    }
+
+    function teamsInGroup(groupName) {
+      return state.teams
+        .filter((team) => team.group === groupName)
+        .sort((a, b) => Number(a.groupPosition || 99) - Number(b.groupPosition || 99));
+    }
+
+    function syncGroupRanksFromPositions(groupName) {
+      teamsInGroup(groupName).forEach((team, index) => {
+        team.groupPosition = String(index + 1);
+        team.groupRank = String(index + 1);
+      });
+    }
+
+    function moveTeamInGroup(teamName, direction) {
+      const team = state.teams.find((item) => item.name === teamName);
+      if (!team || !team.group) return;
+      const ordered = teamsInGroup(team.group);
+      const index = ordered.findIndex((item) => item.name === teamName);
+      const swapIndex = index + direction;
+      if (index < 0 || swapIndex < 0 || swapIndex >= ordered.length) return;
+      const current = ordered[index];
+      const target = ordered[swapIndex];
+      const currentPos = current.groupPosition;
+      current.groupPosition = target.groupPosition;
+      target.groupPosition = currentPos;
+      syncGroupRanksFromPositions(team.group);
     }
 
     function playerTeams(player) {
@@ -811,28 +938,32 @@
     }
 
     function renderResults() {
-      document.querySelector("#teamRows").innerHTML = state.teams
-        .slice()
-        .sort((a, b) => (a.owner || "未指名").localeCompare(b.owner || "未指名", "ja") || a.name.localeCompare(b.name, "ja"))
-        .map((team) => `
-          <div class="team-row">
-            <div>
-              <strong>${escapeHtml(team.name)}</strong>
-              <div class="small">${escapeHtml(team.owner || "未指名")}</div>
+      document.querySelector("#teamRows").innerHTML = Object.keys(groups).map((groupName) => `
+        <section class="group-card">
+          <h3>${escapeHtml(groupName)}</h3>
+          ${teamsInGroup(groupName).map((team, index) => `
+            <div class="group-team">
+              <span class="badge">${index + 1}</span>
+              <div class="group-team-meta">
+                <strong>${escapeHtml(team.name)}</strong>
+                <div class="small">指名者: ${escapeHtml(team.owner || "未指名")} | 現在 ${scoreTeam(team)}点</div>
+                <div class="team-row" style="margin-top: 8px;">
+                  <select data-stage-team="${escapeHtml(team.name)}">
+                    ${stages.map(([key, label]) => `
+                      <option value="${key}" ${team.stage === key ? "selected" : ""}>${label}</option>
+                    `).join("")}
+                  </select>
+                  <span class="pill">${groupRankLabels[String(team.groupRank || "")] || "未入力"}</span>
+                </div>
+              </div>
+              <div class="move-buttons">
+                <button class="icon-btn" data-move-team="${escapeHtml(team.name)}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button>
+                <button class="icon-btn" data-move-team="${escapeHtml(team.name)}" data-direction="1" ${index === 3 ? "disabled" : ""}>↓</button>
+              </div>
             </div>
-            <select data-group-rank-team="${escapeHtml(team.name)}">
-              ${Object.entries(groupRankLabels).map(([rank, label]) => `
-                <option value="${rank}" ${String(team.groupRank || "") === rank ? "selected" : ""}>${label}</option>
-              `).join("")}
-            </select>
-            <select data-stage-team="${escapeHtml(team.name)}">
-              ${stages.map(([key, label]) => `
-                <option value="${key}" ${team.stage === key ? "selected" : ""}>${label}</option>
-              `).join("")}
-            </select>
-            <span class="pill">${scoreTeam(team)}点</span>
-          </div>
-        `).join("");
+          `).join("")}
+        </section>
+      `).join("");
     }
 
     function renderLive() {
@@ -911,7 +1042,10 @@
         const nextStage = updates[team.name];
         if (stages.some(([key]) => key === nextStage)) team.stage = nextStage;
         const nextRank = String(rankUpdates[team.name] || "");
-        if (Object.prototype.hasOwnProperty.call(defaultGroupScores, nextRank)) team.groupRank = nextRank;
+        if (Object.prototype.hasOwnProperty.call(defaultGroupScores, nextRank)) {
+          team.groupRank = nextRank;
+          team.groupPosition = nextRank;
+        }
       });
     }
 
@@ -1001,31 +1135,32 @@
 
     document.addEventListener("click", (event) => {
       const removeIndex = event.target.dataset.removePlayer;
-      if (removeIndex === undefined) return;
-      if (state.players.length <= 2) {
-        showToast("参加者は2人以上必要です");
+      if (removeIndex !== undefined) {
+        if (state.players.length <= 2) {
+          showToast("参加者は2人以上必要です");
+          return;
+        }
+        const removed = state.players[Number(removeIndex)];
+        state.players.splice(Number(removeIndex), 1);
+        state.teams.forEach((team) => {
+          if (team.owner === removed) team.owner = "";
+        });
+        state.picks = state.picks.filter((pick) => pick.player !== removed);
+        render();
         return;
       }
-      const removed = state.players[Number(removeIndex)];
-      state.players.splice(Number(removeIndex), 1);
-      state.teams.forEach((team) => {
-        if (team.owner === removed) team.owner = "";
-      });
-      state.picks = state.picks.filter((pick) => pick.player !== removed);
-      render();
+      const moveTeam = event.target.dataset.moveTeam;
+      if (moveTeam) {
+        moveTeamInGroup(moveTeam, Number(event.target.dataset.direction || 0));
+        render();
+      }
     });
 
     document.addEventListener("change", (event) => {
       const teamName = event.target.dataset.stageTeam;
-      const groupRankTeamName = event.target.dataset.groupRankTeam;
       if (teamName) {
         const team = state.teams.find((item) => item.name === teamName);
         if (team) team.stage = event.target.value;
-        render();
-      }
-      if (groupRankTeamName) {
-        const team = state.teams.find((item) => item.name === groupRankTeamName);
-        if (team) team.groupRank = event.target.value;
         render();
       }
     });
